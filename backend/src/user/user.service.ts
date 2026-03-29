@@ -1,6 +1,7 @@
 import { StatusCodes } from "http-status-codes";
 import { checkUser, comparedPassword, hashPassword } from "./helpers/utils.js";
 import { UserModel } from "./user.model.js";
+import { jwtSign } from "../common/jwt.js";
 
 // User Model
 const userModel = UserModel;
@@ -76,9 +77,50 @@ export async function signIn(body: SignInInterface) {
     };
   }
 
+  // Sign jwt token
+  const token = jwtSign(user._id.toString());
+
   return {
     success: true,
     status: StatusCodes.OK,
     message: "Login successful",
+    token,
+  };
+}
+
+export async function userList(filter?: string) {
+  const users = await UserModel.find({
+    $or: [
+      {
+        firstName: {
+          $regex: filter,
+        },
+      },
+      {
+        lastName: {
+          $regex: filter,
+        },
+      },
+    ],
+  });
+
+  if (users.length === 0) {
+    return {
+      success: true,
+      status: StatusCodes.NOT_FOUND,
+      message: "No user found",
+    };
+  }
+
+  return {
+    success: true,
+    statusCode: StatusCodes.OK,
+    message: "Users fetched successfully",
+    users: users.map((u) => ({
+      userName: u.userName,
+      firstName: u.firstName,
+      lastName: u.firstName,
+      _id: u._id,
+    })),
   };
 }

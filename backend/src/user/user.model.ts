@@ -4,6 +4,12 @@ import z from "zod";
 // User Schema
 const UserSchema = new Schema(
   {
+    userName: {
+      type: String,
+      required: true,
+      trim: true,
+      lowercase: true,
+    },
     firstName: {
       type: String,
       required: true,
